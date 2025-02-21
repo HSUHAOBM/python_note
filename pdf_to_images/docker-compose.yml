@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  pdf_converter:
+    build: .
+    container_name: pdf_converter
+    volumes:
+      - ./input_pdfs:/app/input_pdfs
+      - ./output_images:/app/output_images
+    restart: "no"
