@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  chat_ai_model:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - C:/Users/yu66631/.aws:/root/.aws:ro  # 掛載 AWS 憑證
+      # - ~/.aws:/root/.aws:ro
+    environment:
+      - AWS_PROFILE=default
+      - AWS_CONFIG_FILE=/root/.aws/config
+      - AWS_SHARED_CREDENTIALS_FILE=/root/.aws/credentials
