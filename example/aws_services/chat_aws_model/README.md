@@ -8,3 +8,6 @@
 - Windows: `C:/Users/你的帳戶/.aws:/root/.aws:ro`
 - Linux: `~/.aws:/root/.aws:ro`
 
+## 3. 檔案類型處理
+- 圖片檔案(JPG、PNG)：轉換為 Base64 格式，傳送給 AI 分析。
+- 文件檔案(PDF、Word、Excel、TXT)：先用 Textract 解析文件內容，然後將提取的文字傳送給 AI 分析。
