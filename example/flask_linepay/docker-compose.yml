@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  linepay-api:
+    build: .
+    container_name: linepay-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    restart: always
