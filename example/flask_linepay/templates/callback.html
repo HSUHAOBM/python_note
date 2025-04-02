@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>付款成功</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .box {
+            background: white;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .box h1 {
+            color: green;
+        }
+        .details {
+            margin-top: 20px;
+            text-align: left;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>✅ 付款成功！</h1>
+        <p>交易編號：<strong id="txnId">{{ transaction_id }}</strong></p>
+        <div class="details" id="confirmResult"></div>
+        <button onclick="getDetails()">🔍 查詢付款狀態</button>
+        <div class="details" id="detailResult"></div>
+    </div>
+
+    <script>
+        // 自動呼叫 /confirm
+        fetch('/confirm', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                transactionId: '{{ transaction_id }}',
+                amount: {{ amount }}
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const result = document.getElementById('confirmResult');
+            if (data.message) {
+                result.innerHTML = `<p style="color: green;">確認成功：${data.message}</p>`;
+            } else {
+                result.innerHTML = `<p style="color: red;">確認失敗：${data.error || '未知錯誤'}</p>`;
+            }
+        });
+
+        // 點擊查詢詳細狀態
+        function getDetails() {
+            const txnId = document.getElementById('txnId').textContent;
+            fetch(`/details?transactionId=${txnId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const result = document.getElementById('detailResult');
+                    if (Array.isArray(data)) {
+                        const status = data[0].payStatus || data[0].transactionStatus || "未知";
+                        result.innerHTML = `<p>目前付款狀態為：<strong>${status}</strong></p>`;
+                    } else {
+                        result.innerHTML = `<p style="color: red;">查詢失敗：${data.error || '未知錯誤'}</p>`;
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('detailResult').innerHTML =
+                      `<p style="color: red;">查詢失敗：${err.message || '連線錯誤'}</p>`;
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品支付頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+        select, input[type="number"] {
+            font-size: 1.1em;
+            padding: 5px;
+        }
+        img {
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>選擇商品進行支付</h1>
+        <form id="paymentForm">
+            <div class="form-row">
+                <label for="product">選擇商品：</label>
+                <select id="product" name="product" onchange="updateProductDetails()">
+                    <option value="product1" data-price="100" data-image="/static/images/走路草.png">走路草 - NT$100</option>
+                    <option value="product2" data-price="200" data-image="/static/images/呆呆獸.png">呆呆獸 - NT$200</option>
+                    <option value="product3" data-price="300" data-image="/static/images/卡比獸.png">卡比獸 - NT$300</option>
+                </select>
+            </div>
+            <img id="productImage" src="/static/images/走路草.png" alt="商品圖片">
+            <div class="form-row">
+                <label for="quantity">數量：</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" oninput="updateTotal()">
+            </div>
+            <div class="total">總計：NT$<span id="totalPrice">100</span></div>
+            <button type="button" onclick="submitPayment()">提交支付</button>
+        </form>
+    </div>
+
+    <script>
+        function updateProductDetails() {
+            const productElement = document.getElementById('product');
+            const selectedOption = productElement.options[productElement.selectedIndex];
+            const productImageUrl = selectedOption.getAttribute('data-image');
+            const productPrice = parseInt(selectedOption.getAttribute('data-price'));
+
+            // 更新圖片
+            document.getElementById('productImage').src = productImageUrl;
+
+            // 重置數量為 1
+            const quantityInput = document.getElementById('quantity');
+            quantityInput.value = 1;
+
+            // 更新總計
+            document.getElementById('totalPrice').textContent = productPrice;
+        }
+
+        function updateTotal() {
+            const productElement = document.getElementById('product');
+            const selectedOption = productElement.options[productElement.selectedIndex];
+            const productPrice = parseInt(selectedOption.getAttribute('data-price'));
+            const quantity = Math.max(1, parseInt(document.getElementById('quantity').value) || 1);
+
+            // 確保數量最少為 1
+            document.getElementById('quantity').value = quantity;
+
+            // 更新總計
+            document.getElementById('totalPrice').textContent = productPrice * quantity;
+        }
+
+        function submitPayment() {
+            const productElement = document.getElementById('product');
+            const selectedOption = productElement.options[productElement.selectedIndex];
+            const productId = selectedOption.value;
+            const productName = selectedOption.text.split(' - ')[0];
+            const productPrice = parseInt(selectedOption.getAttribute('data-price'));
+            const productImageUrl = selectedOption.getAttribute('data-image');
+            const quantity = Math.max(1, parseInt(document.getElementById('quantity').value) || 1);
+
+            const payload = {
+                product_id: productId,
+                product_name: productName,
+                amount: productPrice ,
+                product_quantity: quantity,
+                product_image_url: productImageUrl
+            };
+
+            fetch('/pay', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.paymentUrl) {
+                    window.location.href = data.paymentUrl; // 跳轉到支付頁面
+                } else {
+                    alert(`支付失敗: ${data.error || '未知錯誤'}`);
+                }
+            })
+            .catch(error => {
+                console.error('支付請求失敗:', error);
+                alert('支付請求失敗，請稍後再試');
+            });
+        }
+    </script>
+</body>
+</html>
