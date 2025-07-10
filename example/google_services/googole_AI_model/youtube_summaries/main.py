@@ -15,7 +15,11 @@ load_dotenv()
 
 def get_prompt(prompt_type):
     prompts = {
-        "transcript": "Transcribe the video. Return only the spoken dialogue, verbatim. Omit any additional text, descriptions, or timestamps.",
+        "transcript": """You must perform a full, complete transcription of the video/audio.
+        Include every spoken word, without summarizing, condensing, paraphrasing, or omitting any dialogue.
+        Preserve the natural speech, including pauses, repetitions, filler words (e.g., "um," "uh," "you know").
+        Do not add timestamps, do not add any description, explanation, or interpretation.
+        Only output the plain text of the spoken content, from start to end, in exact order.""",
         "timestamps": "Generate a timestamped transcript of the video. Each line must follow this format: [hh:mm:ss] Dialogue. Return only timestamp + dialogue.",
         "summary": "Provide a concise summary of the main points in nested bullets, using quotes only when absolutely essential for clarity.",
         "scene": """Please provide a detailed description of the scene in the video, including:
