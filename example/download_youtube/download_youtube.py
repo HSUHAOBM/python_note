@@ -27,7 +27,10 @@ def download_youtube(url: str, mode: str = 'audio'):
             ],
             'progress_hooks': [
                 lambda d: print(
-                    f"下載進度: {d['downloaded_bytes'] / d['total_bytes']:.2%}") if d['status'] == 'downloading' else None
+                    f"下載進度: {d['downloaded_bytes'] / d['total_bytes']:.2%}"
+                ) if d['status'] == 'downloading' and d.get('total_bytes') else print(
+                    f"已下載: {d['downloaded_bytes'] / 1024:.2f} KB"
+                ) if d['status'] == 'downloading' else None
             ]
         }
     # 影片
@@ -40,7 +43,10 @@ def download_youtube(url: str, mode: str = 'audio'):
             'merge_output_format': 'mp4',  # 格式
             'progress_hooks': [
                 lambda d: print(
-                    f"下載進度: {d['downloaded_bytes'] / d['total_bytes']:.2%}") if d['status'] == 'downloading' else None
+                    f"下載進度: {d['downloaded_bytes'] / d['total_bytes']:.2%}"
+                ) if d['status'] == 'downloading' and d.get('total_bytes') else print(
+                    f"已下載: {d['downloaded_bytes'] / 1024:.2f} KB"
+                ) if d['status'] == 'downloading' else None
             ]
         }
     else:
