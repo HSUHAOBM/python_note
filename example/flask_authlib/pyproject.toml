@@ -1,0 +1,12 @@
+[project]
+name = "flask-oauth-demo"
+version = "0.1.0"
+description = "Flask + Authlib 多平台 OAuth 登入範例"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "authlib==1.2.1",
+    "flask==2.3.3",
+    "python-dotenv==1.0.0",
+    "requests==2.31.0",
+]
