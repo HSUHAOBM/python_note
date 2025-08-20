@@ -1,7 +1,8 @@
-from flask import Flask, session, redirect, url_for, request, render_template, jsonify
+from flask import Flask, session, redirect, url_for, request, render_template
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 import os
+import requests
 
 # 載入環境變數
 load_dotenv()
@@ -13,16 +14,17 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key')
 oauth = OAuth(app)
 
 # Google OAuth 設定
+# server_metadata_url	自動取得 authorize_url、access_token_url、jwks_uri 等資訊（符合 OIDC 標準）
 google = oauth.register(
     name='google',
     client_id=os.getenv('GOOGLE_CLIENT_ID'),
     client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
     client_kwargs={
         'scope': 'openid email profile'
     }
 )
+
 
 # GitHub OAuth 設定
 github = oauth.register(
@@ -36,6 +38,18 @@ github = oauth.register(
 )
 
 
+# LINE OAuth 設定
+line = oauth.register(
+    name='line',
+    client_id=os.getenv('LINE_CLIENT_ID'),
+    client_secret=os.getenv('LINE_CLIENT_SECRET'),
+    access_token_url='https://api.line.me/oauth2/v2.1/token',
+    authorize_url='https://access.line.me/oauth2/v2.1/authorize',
+    api_base_url='https://api.line.me/',
+    client_kwargs={'scope': 'profile'},
+)
+
+
 @app.route('/')
 def index():
     user = session.get('user')
@@ -46,10 +60,7 @@ def index():
 def login(provider):
     """通用登入路由"""
     # 檢查是否為開發中的提供商
-    if provider in ['facebook', 'line']:
-        return "此登入方式開發測試中，敬請期待！", 501
-
-    if provider not in ['google', 'github']:
+    if provider not in ['google', 'github', 'line']:
         return "不支援的登入提供商", 400
 
     client = oauth.create_client(provider)
@@ -60,7 +71,8 @@ def login(provider):
 @app.route('/callback/<provider>')
 def callback(provider):
     """通用回調路由"""
-    if provider not in ['google', 'github']:
+
+    if provider not in ['google', 'github', 'line']:
         return "不支援的登入提供商", 400
 
     client = oauth.create_client(provider)
@@ -104,31 +116,61 @@ def get_user_info(provider, client, token):
                 }
 
     elif provider == 'github':
-        # GitHub API 調用
-        resp = client.get('user')
-        user_data = resp.json()
+        try:
+            # GitHub API 調用
+            resp = client.get('user')
+            user_data = resp.json()
 
-        # GitHub 用戶基本資料
-        print("=== GitHub 用戶基本資料 ===")
-        print(f"完整資料: {user_data}")
+            # 用戶基本資料
+            print("=== GitHub 用戶基本資料 ===")
+            print(f"完整資料: {user_data}")
 
-        email_resp = client.get('user/emails')
-        emails = email_resp.json()
+            email_resp = client.get('user/emails')
+            emails = email_resp.json()
 
-        print("\n=== GitHub Email 資料 ===")
-        print(f"Email 列表: {emails}")
+            print("\n=== GitHub Email 資料 ===")
+            print(f"Email 列表: {emails}")
 
-        primary_email = next((email['email']
-                             for email in emails if email['primary']), None)
-        print(f"主要 Email: {primary_email}")
-        print("=" * 40)
+            primary_email = next((email['email']
+                                  for email in emails if email['primary']), None)
+            print(f"主要 Email: {primary_email}")
+            print("=" * 40)
 
-        return {
-            'id': user_data['id'],
-            'name': user_data['name'] or user_data['login'],
-            'email': primary_email,
-            'picture': user_data['avatar_url']
-        }
+            return {
+                'id': user_data['id'],
+                'name': user_data['name'] or user_data['login'],
+                'email': primary_email,
+                'picture': user_data['avatar_url']
+            }
+        except Exception as e:
+            print(f"GitHub userinfo 錯誤: {e}")
+            return None
+
+    elif provider == 'line':
+        # code → token 用 Authlib
+        access_token = token['access_token']
+        headers = {'Authorization': f'Bearer {access_token}'}
+
+        # LINE Profile API
+        profile_url = 'https://api.line.me/v2/profile'
+        resp = requests.get(profile_url, headers=headers)
+
+        print(f"=== LINE API Response Status: {resp.status_code} ===")
+        print(f"=== LINE API Response Text: {resp.text} ===")
+
+        if resp.status_code == 200:
+            user_data = resp.json()
+            print("=== LINE 用戶基本資料 ===")
+            print(f"完整資料: {user_data}")
+            return {
+                'id': user_data.get('userId'),
+                'name': user_data.get('displayName'),
+                'email': token.get('email'),  # LINE 通常不提供 email
+                'picture': user_data.get('pictureUrl')
+            }
+        else:
+            print(f"LINE API 調用失敗: {resp.status_code}")
+            return None
 
     return None
 

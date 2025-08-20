@@ -44,9 +44,6 @@
         .btn-github {
             background-color: #333;
         }
-        .btn-facebook {
-            background-color: #1877f2;
-        }
         .btn-line {
             background-color: #00c300;
         }
@@ -96,9 +93,6 @@
                 <a href="{{ url_for('login', provider='github') }}" class="btn btn-github">
                     🐙 GitHub 登入
                 </a>
-                <a href="{{ url_for('login', provider='facebook') }}" class="btn btn-facebook">
-                    📘 Facebook 登入
-                </a>
                 <a href="{{ url_for('login', provider='line') }}" class="btn btn-line">
                     💬 LINE 登入
                 </a>
@@ -106,7 +100,7 @@
 
             <h3>功能說明：</h3>
             <ul>
-                <li>支援 Google、GitHub、Facebook、LINE 登入</li>
+                <li>支援 Google、GitHub、LINE 登入</li>
                 <li>統一的用戶介面和體驗</li>
                 <li>安全的 OAuth 2.0 實作</li>
                 <li>會話管理</li>

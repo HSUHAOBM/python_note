@@ -1,6 +1,6 @@
 # Flask + Authlib 多平台 OAuth 登入
 
-使用 Authlib 套件實作多個第三方登入（Google、GitHub）。
+使用 Authlib 套件實作多個第三方登入（Google、GitHub、LINE）。
 
 
 ## 快速開始
@@ -73,6 +73,16 @@ uv run python app.py
 3. **獲取認證資訊**
    - 取得 Client ID、Client Secret
 
+### 3. LINE OAuth 設定
+
+#### 申請步驟：
+1. **進入 LINE Developers**
+   - 註冊 LINE Login
+   - 取得 Channel ID (Client ID)
+   - 取得 Channel secret (Client Secret)
+   - 設定 Callback URL: http://localhost:8000/callback/line
+   - 如果要取得用戶信箱：OpenID Connect → Email address permission → Apply
+
 
 ## 環境變數設定
 
@@ -91,6 +101,10 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
 
+# LINE OAuth
+LINE_CLIENT_ID=your_line_channel_id
+LINE_CLIENT_SECRET=your_line_channel_secret
+
 # Flask 設定
 SECRET_KEY=your_secret_key_here
 # 測試模式 (development、production)
@@ -102,13 +116,15 @@ FLASK_ENV=development
 ## 程式碼結構
 
 ```
-Authlib/
-├── app.py              # 主應用程式
-├── requirements.txt    # Python 依賴
-├── .env.example       # 環境變數範例
-├── .env              # 實際環境變數（不要提交到 git）
+flask_authlib/
+├── app.py                    # Authlib 版本（支援 Google、GitHub、LINE）
+├── simple_line_test.py       # 純 requests 版本，不使用 Authlib（僅 LINE）
+├── pyproject.toml           # Python 依賴管理
+├── uv.lock                  # 依賴鎖定檔案
+├── .env.example             # 環境變數範例
+├── .env                     # 環境變數
 ├── templates/
-│   ├── index.html    # 首頁
-│   └── profile.html  # 用戶資料頁
-└── README.md         # 說明文件
+│   ├── index.html          # 首頁
+│   └── profile.html        # 用戶資料
+└── README.md               # 說明文件
 ```
