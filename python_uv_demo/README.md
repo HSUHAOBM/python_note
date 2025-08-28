@@ -121,7 +121,6 @@ uv python list           # 查看可用版本
 
 # 運行程式
 uv run python app.py     # 使用專案 Python 版本
-uv shell
 ```
 
 ## 專案結構
