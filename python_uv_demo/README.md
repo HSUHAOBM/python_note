@@ -75,6 +75,15 @@ uv run python app.py
 uv run --python 3.11 python app.py
 ```
 
+### 簡單範例
+```
+uv init - 初始化專案
+uv python pin 3.11 - 固定 Python 版本
+uv sync - 同步依賴項
+uv venv - 創建虛擬環境
+```
+
+
 ## Python 版本管理
 
 ### 檢查當前版本
